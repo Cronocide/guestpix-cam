@@ -1,9 +1,12 @@
 body {
-	background-color: white;
+	background-color: black;
 	margin: 0;
 }
 body > div.output {
-	width: 340px;
+	display: none;
+	vertical-align: top;
+}
+#canvas {
 	display: none;
 	vertical-align: top;
 }

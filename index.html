@@ -47,6 +47,31 @@
 	current_device = null;
 	constraints = { video: true }
 
+	function login() {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'https://my.guestpix.com/Guest/Login/8154?retry=True', true);
+		xhr.withCredentials = true;
+		xhr.responseType = 'document'
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState == 4) {
+				if (xhr.status == 200) {
+					var data = xhr.response;
+					var headers = xhr.getAllResponseHeaders()
+					console.log(headers)
+					token = data.getElementsByName("__RequestVerificationToken")[0].value
+					var loginxhr = new XMLHttpRequest();
+					loginxhr.open('POST', 'https://my.guestpix.com/Guest/Login/8154', false);
+					loginxhr.withCredentials = true;
+					data = 'id=8154&message=&description=Thank+you+for+sharing+your+best+pictures+from+the+wedding%21&passcode=1987&name=photobooth&email=&__RequestVerificationToken=' + token
+					loginxhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+					loginxhr.setRequestHeader('Origin', 'https://my.guestpix.com');
+					loginxhr.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7')
+					loginxhr.send(data)		
+				}
+			}
+		};
+		xhr.send()
+	}
 	if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
 		console.log('We have cameras:')
 		getCameras().then(function (cams) {
@@ -97,10 +122,10 @@
 			// to first open it in its own tab or window. Otherwise, it
 			// won't be able to request permission for camera access.
 			document.querySelector(".contentarea").remove();
-			const button = document.createElement("button");
-			button.textContent = "View live result of the example code above";
+			const button = document.createElement('button');
+			button.textContent = 'View live result of the example code above';
 			document.body.append(button);
-			button.addEventListener("click", () => window.open(location.href));
+			button.addEventListener('click', () => window.open(location.href));
 			return true;
 		}
 		return false;
@@ -109,10 +134,10 @@
 		if (showViewLiveResultButton()) {
 			return;
 		}
-		video = document.getElementById("video");
-		canvas = document.getElementById("canvas");
-		photo = document.getElementById("photo");
-		startbutton = document.getElementById("startbutton");
+		video = document.getElementById('video');
+		canvas = document.getElementById('canvas');
+		photo = document.getElementById('photo');
+		startbutton = document.getElementById('startbutton');
 
 		navigator.mediaDevices
 			.getUserMedia(constraints)
@@ -125,7 +150,7 @@
 			});
 
 		video.addEventListener(
-			"canplay",
+			'canplay',
 			(ev) => {
 				if (!streaming || streaming === 'undefined') {
 					height = video.videoHeight / (video.videoWidth / width);
@@ -137,10 +162,10 @@
 						height = width / (4 / 3);
 					}
 
-					video.setAttribute("width", width);
-					video.setAttribute("height", height);
-					canvas.setAttribute("width", width);
-					canvas.setAttribute("height", height);
+					video.setAttribute('width', width);
+					video.setAttribute('height', height);
+					canvas.setAttribute('width', width);
+					canvas.setAttribute('height', height);
 					streaming = true;
 				}
 			},
@@ -148,7 +173,7 @@
 		);
 
 		// startbutton.addEventListener(
-		// 	"click",
+		// 	'click',
 		// 	(ev) => {
 		// 		takepicture();
 		// 		ev.preventDefault();
@@ -166,6 +191,7 @@
 			e.preventDefault(); // prevent the default action (scroll / move caret)
 		};
 		clearphoto();
+		login();
 	}
 	function startStreamWithCamera() {
 		navigator.mediaDevices.getUserMedia({ video: true, audio: false })
@@ -177,12 +203,12 @@
 			});
 	}
 	function clearphoto() {
-		const context = canvas.getContext("2d");
-		context.fillStyle = "#AAA";
+		const context = canvas.getContext('2d');
+		context.fillStyle = '#AAA';
 		context.fillRect(0, 0, canvas.width, canvas.height);
 
-		const data = canvas.toDataURL("image/png");
-		photo.setAttribute("src", data);
+		const data = canvas.toDataURL('image/png');
+		photo.setAttribute('src', data);
 	}
 
 	// Capture a photo by fetching the current contents of the video
@@ -192,7 +218,7 @@
 	// other changes before drawing it.
 
 	function takepicture() {
-		const context = canvas.getContext("2d");
+		const context = canvas.getContext('2d');
 		width = document.body.clientWidth
 		height = video.videoHeight / (video.videoWidth / width);
 		if (width && height) {
@@ -200,8 +226,8 @@
 			canvas.height = height;
 			context.drawImage(video, 0, 0, width, height);
 
-			const data = canvas.toDataURL("image/png");
-			photo.setAttribute("src", data);
+			const data = canvas.toDataURL('image/png');
+			photo.setAttribute('src', data);
 			upload(dataURItoBlob(data));
 		} else {
 			clearphoto();
@@ -210,38 +236,40 @@
 	// upload PNG files
 	function upload(file) {
 		var xhr = new XMLHttpRequest();
-		console.log(file)
-		var form = new FormData();
-		form.append("image", file, "filename.png");
+		xhr.withCredentials = true;
 		// create progress bar
-		var o = document.getElementById("progress");
+		var o = document.getElementById('progress');
 		// Removeexisting bar
 		existing = o.firstChild
 		if (existing) {
 			o.removeChild(o.firstChild)
 		}
-		var progress = o.appendChild(document.createElement("p"));
-		progress.appendChild(document.createTextNode("upload " + file.name));
+		var progress = o.appendChild(document.createElement('p'));
+		progress.appendChild(document.createTextNode('upload ' + file.name));
 
 
 		// progress bar
-		xhr.upload.addEventListener("progress", function (e) {
+		xhr.upload.addEventListener('progress', function (e) {
 			var pc = parseInt(100 - (e.loaded / e.total * 100));
-			progress.style.backgroundPosition = pc + "% 0";
+			progress.style.backgroundPosition = pc + '% 0';
 		}, false);
 
 		// file received/failed
 		xhr.onreadystatechange = function (e) {
 			if (xhr.readyState == 4) {
-				progress.className = (xhr.status == 200 ? "success" : "failure");
+				progress.className = (xhr.status == 200 ? 'success' : 'failure');
 			}
 		};
 
 		// start upload
-		xhr.open("POST", "upload".action, true);
-		xhr.setRequestHeader("X_FILENAME", file.name);
-		var fd = new FormData();
-		xhr.send(file);
+		var form = new FormData();
+		form.append('dzUuid', '78319fd8-ae00-452c-b09a-6f06ab5d376e');
+		form.append('file', file, 'filename.png');
+		xhr.open('POST', 'https://my.guestpix.com/api/ChunkUpload?id=8154', true);
+		xhr.withCredentials = true;
+		// xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		xhr.setRequestHeader('X_FILENAME', file.name);
+		xhr.send(form);
 	}
 
 </script>
