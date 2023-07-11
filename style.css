@@ -1,0 +1,47 @@
+body {
+	background-color: white;
+	margin: 0;
+}
+body > div.output {
+	width: 340px;
+	display: none;
+	vertical-align: top;
+}
+video {
+	width: 100%;
+}
+
+#messages
+{
+	padding: 0 10px;
+	margin: 1em 0;
+	border: 1px solid #999;
+}
+
+#progress p
+{
+	display: block;
+	width: 240px;
+	padding: 2px 5px;
+	margin: 2px 0;
+	border: 1px inset #446;
+	border-radius: 5px;
+	background: #eee url("progress.png") 100% 0 repeat-y;
+	position: relative;
+	z-index: 1;
+}
+
+#progress p.success
+{
+	background: #0c0 none 0 0 no-repeat;
+}
+
+#progress p.failed
+{
+	background: #c00 none 0 0 no-repeat;
+}
+
+#progress p.failure
+{
+	background: #c00 none 0 0 no-repeat;
+}
