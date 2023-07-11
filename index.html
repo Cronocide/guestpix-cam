@@ -314,6 +314,7 @@
 	}
 	// upload PNG files
 	function upload(file) {
+		file.name = 'photobooth_' + (new Date(2010, 6, 26).getTime() / 1000) + '.png'
 		var xhr = new XMLHttpRequest();
 		xhr.withCredentials = true;
 		// create progress bar
