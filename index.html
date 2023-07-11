@@ -52,6 +52,7 @@
 			chunkSize: 5000000,
 			chunksUploaded: function (file, done) {
 				// All chunks have been uploaded. Perform any other actions
+				console.log('Combining chunks')
 				var currentFile = file;
 				file.progress = 75;
 				file.filename = "FINALISING ...";
@@ -66,7 +67,7 @@
                         	+ "&fileName=" + encodeURIComponent(currentFile.name)
                         	+ "&expectedBytes=" + currentFile.size
                        	 	+ "&totalChunks=" + currentFile.upload.totalChunkCount, true);
-				xhr.send(form);
+				xhr.send();
                 // 		$.ajax({
 		// 		type: "PUT",
 		// 		xhrFields: {
@@ -130,8 +131,6 @@
 			if (xhr.readyState == 4) {
 				if (xhr.status == 200) {
 					var data = xhr.response;
-					var headers = xhr.getAllResponseHeaders()
-					console.log(headers)
 					token = data.getElementsByName("__RequestVerificationToken")[0].value
 					var loginxhr = new XMLHttpRequest();
 					loginxhr.open('POST', 'https://gpproxy.cronocide.net/Guest/Login/8154', false);
