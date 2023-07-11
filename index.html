@@ -5,6 +5,8 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="style.css">
+	<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 	<title>Guestpix Camera</title>
 </head>
 </body>
@@ -17,8 +19,84 @@
 <div class="output">
 	<img id="photo" alt="The screen capture will appear in this box." />
 </div>
+<div id = "dropzone"></div>
 </body>
 <script>
+	Dropzone.autoDiscover = false;
+	let myDropzone = new Dropzone('#dropzone',{
+			url: 'https://gpproxy.cronocide.net/api/ChunkUpload?id=8154',
+			params: function (files, xhr, chunk) {
+				if (chunk) {
+					return {
+                				dzUuid: chunk.file.upload.uuid,
+						dzChunkIndex: chunk.index,
+						dzTotalFileSize: chunk.file.size,
+						dzCurrentChunkSize: chunk.dataBlock.data.size,
+						dzTotalChunkCount: chunk.file.upload.totalChunkCount,
+						dzChunkByteOffset: chunk.index * this.options.chunkSize,
+						dzChunkSize: this.options.chunkSize,
+						dzFilename: chunk.file.name
+					};
+				}
+			},
+			autoQueue: true,
+			autoProcessQueue: false,
+			uploadMultiple: false,
+			clickable: false,
+			paramName: 'file', // The name that will be used to transfer the file
+			maxFilesize: 5048, // MB
+			withCredentials: true,
+			chunking: true,
+			chunkSize: 5000000,
+			chunksUploaded: function (file, done) {
+				// All chunks have been uploaded. Perform any other actions
+				var currentFile = file;
+				file.progress = 75;
+				file.filename = "FINALISING ...";
+                		var tryCount = 0;
+                		var retryLimit = 1;
+ 
+				// This calls server-side code to merge all chunks for the currentFile
+                $.ajax({
+                    type: "PUT",
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    url: "/api/ChunkUpload?id=8154"
+                        + "&dzIdentifier=" + currentFile.upload.uuid
+                        + "&fileName=" + encodeURIComponent(currentFile.name)
+                        + "&expectedBytes=" + currentFile.size
+                        + "&totalChunks=" + currentFile.upload.totalChunkCount,
+                    success: function (data) {
+                        // Must call done() if successful
+                        //if (currentFile.upload.totalChunkCount > 10) {
+                        //    document.getElementById("loaderbg").style.display = "none";
+                        //}
+                        //file.filename = "DONE";
+                        done();
+                       
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                            tryCount++;
+                            console.log("ERROR FUNCTION" + thrownError);
+                            if (tryCount <= retryLimit) {
+                                //try again up to the retry limit
+
+                                console.log("Error. Retrying. Attempt no:" + tryCount);
+                                $.ajax(this);
+                                return;
+                            }
+
+                            //console.log(xhr);
+                        var errorMsg = "Upload failed. " + thrownError + "\r\n" + xhr.status + "\r\n";
+                        //+ xhr.responseText;
+                        myDropzone[0].dropzone._errorProcessing([file], errorMsg);
+
+                    }
+                });
+			// accept: function(file, done) {
+			// }
+		});
 	function dataURItoBlob(dataURI) {
 		// convert base64 to raw binary data held in a string
 		// doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
@@ -261,14 +339,17 @@
 		};
 
 		// start upload
-		var form = new FormData();
-		form.append('dzUuid', '78319fd8-ae00-452c-b09a-6f06ab5d376e');
-		form.append('file', file, 'filename.png');
-		xhr.open('POST', 'https://gpproxy.cronocide.net/api/ChunkUpload?id=8154', true);
-		xhr.withCredentials = true;
-		// xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		xhr.setRequestHeader('X_FILENAME', file.name);
-		xhr.send(form);
+		myDropzone.addFile(file)
+		// myDropzone.enqueueFile(file)
+		myDropzone.processQueue()
+		// var form = new FormData();
+		// form.append('dzUuid', '78319fd8-ae00-452c-b09a-6f06ab5d376e');
+		// form.append('dzUuid', '78319fd8-ae00-452c-b09a-6f06ab5d376e');
+		// form.append('file', file, 'filename.png');
+		// xhr.open('POST', 'https://gpproxy.cronocide.net/api/ChunkUpload?id=8154', true);
+		// xhr.withCredentials = true;
+		// // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		// xhr.send(form);
 	}
 
 </script>
