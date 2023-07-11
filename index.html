@@ -49,7 +49,7 @@
 
 	function login() {
 		var xhr = new XMLHttpRequest();
-		xhr.open('GET', 'https://my.guestpix.com/Guest/Login/8154?retry=True', true);
+		xhr.open('GET', 'https://gpproxy.cronocide.net/Guest/Login/8154?retry=True', true);
 		xhr.withCredentials = true;
 		xhr.responseType = 'document'
 		xhr.onreadystatechange = function () {
@@ -60,11 +60,10 @@
 					console.log(headers)
 					token = data.getElementsByName("__RequestVerificationToken")[0].value
 					var loginxhr = new XMLHttpRequest();
-					loginxhr.open('POST', 'https://my.guestpix.com/Guest/Login/8154', false);
+					loginxhr.open('POST', 'https://gpproxy.cronocide.net/Guest/Login/8154', false);
 					loginxhr.withCredentials = true;
 					data = 'id=8154&message=&description=Thank+you+for+sharing+your+best+pictures+from+the+wedding%21&passcode=1987&name=photobooth&email=&__RequestVerificationToken=' + token
 					loginxhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-					loginxhr.setRequestHeader('Origin', 'https://my.guestpix.com');
 					loginxhr.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7')
 					loginxhr.send(data)		
 				}
@@ -265,7 +264,7 @@
 		var form = new FormData();
 		form.append('dzUuid', '78319fd8-ae00-452c-b09a-6f06ab5d376e');
 		form.append('file', file, 'filename.png');
-		xhr.open('POST', 'https://my.guestpix.com/api/ChunkUpload?id=8154', true);
+		xhr.open('POST', 'https://gpproxy.cronocide.net/api/ChunkUpload?id=8154', true);
 		xhr.withCredentials = true;
 		// xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 		xhr.setRequestHeader('X_FILENAME', file.name);
