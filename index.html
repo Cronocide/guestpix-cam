@@ -88,12 +88,9 @@
                 //     })
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
-                            //console.log(xhr);
-                        var errorMsg = "Upload failed. " + thrownError + "\r\n" + xhr.status + "\r\n";
-                        //+ xhr.responseText;
-                        myDropzone[0].dropzone._errorProcessing([file], errorMsg);
-
-                    }
+                        	var errorMsg = "Upload failed. " + thrownError + "\r\n" + xhr.status + "\r\n";
+                        	myDropzone[0].dropzone._errorProcessing([file], errorMsg);
+                    	}
                 });
 
 	function dataURItoBlob(dataURI) {
@@ -142,6 +139,12 @@
 					data = 'id=8154&message=&description=Thank+you+for+sharing+your+best+pictures+from+the+wedding%21&passcode=1987&name=photobooth&email=&__RequestVerificationToken=' + token
 					loginxhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 					loginxhr.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7')
+					loginxhr.onreadystatechange = function () {
+						loggedinxhr = new XMLHttpRequest();
+						loggedinxhr.open('GET', 'https://gpproxy.cronocide.net/Guest/Welcome', false);
+						loggedinxhr.withCredentials = true;
+						loggedinxhr.send()
+					}
 					loginxhr.send(data)		
 				}
 			}
