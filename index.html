@@ -5,8 +5,8 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="style.css">
-	<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
-	<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/dropzone.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/dropzone.css" type="text/css" />
 	<title>Guestpix Camera</title>
 </head>
 </body>
@@ -26,6 +26,7 @@
 	let myDropzone = new Dropzone('#dropzone',{
 			url: 'https://gpproxy.cronocide.net/api/ChunkUpload?id=8154',
 			params: function (files, xhr, chunk) {
+				console.log(chunk)
 				if (chunk) {
 					return {
                 				dzUuid: chunk.file.upload.uuid,
@@ -45,6 +46,7 @@
 			clickable: false,
 			paramName: 'file', // The name that will be used to transfer the file
 			maxFilesize: 5048, // MB
+			forceChunking: true,
 			withCredentials: true,
 			chunking: true,
 			chunkSize: 5000000,
@@ -57,36 +59,35 @@
                 		var retryLimit = 1;
  
 				// This calls server-side code to merge all chunks for the currentFile
-                $.ajax({
-                    type: "PUT",
-                    xhrFields: {
-                        withCredentials: true
-                    },
-                    url: "/api/ChunkUpload?id=8154"
-                        + "&dzIdentifier=" + currentFile.upload.uuid
-                        + "&fileName=" + encodeURIComponent(currentFile.name)
-                        + "&expectedBytes=" + currentFile.size
-                        + "&totalChunks=" + currentFile.upload.totalChunkCount,
-                    success: function (data) {
-                        // Must call done() if successful
-                        //if (currentFile.upload.totalChunkCount > 10) {
-                        //    document.getElementById("loaderbg").style.display = "none";
-                        //}
-                        //file.filename = "DONE";
-                        done();
+				var xhr = new XMLHttpRequest();
+				xhr.withCredentials = true
+				xhr.open('PUT', 'https://gpproxy.cronocide.net/api/ChunkUpload?id=8154'
+				+ "&dzIdentifier=" + currentFile.upload.uuid
+                        	+ "&fileName=" + encodeURIComponent(currentFile.name)
+                        	+ "&expectedBytes=" + currentFile.size
+                       	 	+ "&totalChunks=" + currentFile.upload.totalChunkCount, true);
+				xhr.send(form);
+                // 		$.ajax({
+		// 		type: "PUT",
+		// 		xhrFields: {
+                //         withCredentials: true
+                //     },
+                //     url: "/api/ChunkUpload?id=8154"
+                //         + "&dzIdentifier=" + currentFile.upload.uuid
+                //         + "&fileName=" + encodeURIComponent(currentFile.name)
+                //         + "&expectedBytes=" + currentFile.size
+                //         + "&totalChunks=" + currentFile.upload.totalChunkCount,
+                //     success: function (data) {
+                //         // Must call done() if successful
+                //         //if (currentFile.upload.totalChunkCount > 10) {
+                //         //    document.getElementById("loaderbg").style.display = "none";
+                //         //}
+                //         //file.filename = "DONE";
+                //         done();
                        
-                    },
-                    error: function (xhr, ajaxOptions, thrownError) {
-                            tryCount++;
-                            console.log("ERROR FUNCTION" + thrownError);
-                            if (tryCount <= retryLimit) {
-                                //try again up to the retry limit
-
-                                console.log("Error. Retrying. Attempt no:" + tryCount);
-                                $.ajax(this);
-                                return;
-                            }
-
+                //     })
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
                             //console.log(xhr);
                         var errorMsg = "Upload failed. " + thrownError + "\r\n" + xhr.status + "\r\n";
                         //+ xhr.responseText;
@@ -94,9 +95,7 @@
 
                     }
                 });
-			// accept: function(file, done) {
-			// }
-		});
+
 	function dataURItoBlob(dataURI) {
 		// convert base64 to raw binary data held in a string
 		// doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
