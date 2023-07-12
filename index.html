@@ -257,7 +257,11 @@
 
 		document.onkeydown = function (e) {
 			switch (e.which) {
-				case 175: // enter
+				case 175: // volup
+					e.preventDefault();
+					takepicture();
+					break;
+				case 13: // enter
 					e.preventDefault();
 					takepicture();
 					break;
