@@ -25,7 +25,7 @@
 <div id = "dropzone"></div>
 </body>
 <script>
-	navigator.getUserMedia ({video: true})
+	navigator.mediaDevices.getUserMedia({video: true})
 	document.getElementById('flash').style.opacity = 0;
 	const max_uploads=30
 	let camindex = 0
