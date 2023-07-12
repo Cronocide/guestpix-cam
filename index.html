@@ -7,21 +7,28 @@
 	<link rel="stylesheet" href="style.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/dropzone.min.js"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/dropzone.css" type="text/css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<title>Guestpix Camera</title>
 </head>
 </body>
+<div id="flash" class="flash">
+</div>
 <div id="progress"></div>
 <div class="camera">
 	<video id="video">Video stream not available.</video>
-	<!-- <button id="startbutton">Take photo</button> -->
 </div>
 <canvas id="canvas"> </canvas>
 <div class="output">
 	<img id="photo" alt="The screen capture will appear in this box." />
 </div>
+<button id="flipcam" class="flipcam btn"><img src="flip.png"></i></button>
 <div id = "dropzone"></div>
 </body>
 <script>
+	document.getElementById('flash').style.opacity = 0;
+	const max_uploads=30
+	let camindex = 0
+	let maxcams = 1
 	Dropzone.autoDiscover = false;
 	let myDropzone = new Dropzone('#dropzone',{
 			url: 'https://gpproxy.cronocide.net/api/ChunkUpload?id=8154',
@@ -43,6 +50,7 @@
 			autoQueue: true,
 			autoProcessQueue: false,
 			uploadMultiple: false,
+			parallelUploads: max_uploads,
 			clickable: false,
 			paramName: 'file', // The name that will be used to transfer the file
 			maxFilesize: 5048, // MB
@@ -155,7 +163,7 @@
 		getCameras().then(function (cams) {
 			console.log(cams)
 			devices = cams
-			current_device = cams[0]
+			current_device = cams[camindex]
 			constraints = {
 				video: true,
 				deviceId: {
@@ -183,7 +191,6 @@
 		let video = null;
 		let canvas = null;
 		let photo = null;
-		let startbutton = null;
 		startup();
 	}
 
@@ -215,7 +222,6 @@
 		video = document.getElementById('video');
 		canvas = document.getElementById('canvas');
 		photo = document.getElementById('photo');
-		startbutton = document.getElementById('startbutton');
 
 		navigator.mediaDevices
 			.getUserMedia(constraints)
@@ -227,9 +233,7 @@
 				console.error(`An error occurred: ${err}`);
 			});
 
-		video.addEventListener(
-			'canplay',
-			(ev) => {
+		video.addEventListener('canplay',(ev) => {
 				if (!streaming || streaming === 'undefined') {
 					height = video.videoHeight / (video.videoWidth / width);
 
@@ -250,14 +254,6 @@
 			false,
 		);
 
-		// startbutton.addEventListener(
-		// 	'click',
-		// 	(ev) => {
-		// 		takepicture();
-		// 		ev.preventDefault();
-		// 	},
-		// 	false,
-		// );
 		document.onkeydown = function (e) {
 			switch (e.which) {
 				case 13: // enter
@@ -269,17 +265,8 @@
 			e.preventDefault(); // prevent the default action (scroll / move caret)
 		};
 		clearphoto();
-		login();
 	}
-	function startStreamWithCamera() {
-		navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-			.then((stream) => {
-				video.srcObject = stream;
-				video.play();
-			}).catch((err) => {
-				console.error(`An error occurred: ${err}`);
-			});
-	}
+
 	function clearphoto() {
 		const context = canvas.getContext('2d');
 		context.fillStyle = '#AAA';
@@ -296,6 +283,7 @@
 	// other changes before drawing it.
 
 	function takepicture() {
+		camFlash
 		const context = canvas.getContext('2d');
 		width = document.body.clientWidth
 		height = video.videoHeight / (video.videoWidth / width);
@@ -306,52 +294,42 @@
 
 			const data = canvas.toDataURL('image/png');
 			photo.setAttribute('src', data);
+			camFlash();
 			upload(dataURItoBlob(data));
 		} else {
+			camFlash();
 			clearphoto();
 		}
 	}
 	// upload PNG files
 	function upload(file) {
-		file.name = 'photobooth_' + (new Date(2010, 6, 26).getTime() / 1000) + '.png'
-		var xhr = new XMLHttpRequest();
-		xhr.withCredentials = true;
-		// create progress bar
-		var o = document.getElementById('progress');
-		// Removeexisting bar
-		existing = o.firstChild
-		if (existing) {
-			o.removeChild(o.firstChild)
-		}
-		var progress = o.appendChild(document.createElement('p'));
-		progress.appendChild(document.createTextNode('upload ' + file.name));
-
-
-		// progress bar
-		xhr.upload.addEventListener('progress', function (e) {
-			var pc = parseInt(100 - (e.loaded / e.total * 100));
-			progress.style.backgroundPosition = pc + '% 0';
-		}, false);
-
-		// file received/failed
-		xhr.onreadystatechange = function (e) {
-			if (xhr.readyState == 4) {
-				progress.className = (xhr.status == 200 ? 'success' : 'failure');
-			}
-		};
-
+		console.log('Uploading File')
+		file.name = 'photobooth_' + (new Date().getTime() / 1000) + '.png'
 		// start upload
 		myDropzone.addFile(file)
-		// myDropzone.enqueueFile(file)
 		myDropzone.processQueue()
-		// var form = new FormData();
-		// form.append('dzUuid', '78319fd8-ae00-452c-b09a-6f06ab5d376e');
-		// form.append('dzUuid', '78319fd8-ae00-452c-b09a-6f06ab5d376e');
-		// form.append('file', file, 'filename.png');
-		// xhr.open('POST', 'https://gpproxy.cronocide.net/api/ChunkUpload?id=8154', true);
-		// xhr.withCredentials = true;
-		// // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		// xhr.send(form);
+		if (myDropzone.files.length >= max_uploads) {
+			location.reload();
+		}
+	}
+	function nextCam() {
+		camindex++;
+		console.log('camindex is now ' + camindex);
+		camindex = camindex % maxcams;
+		startup();
+	}
+	function camFlash() {
+		let flashdiv = document.getElementById('flash');
+		document.getElementById('flash').style.opacity = 1;
+		for (opacity = 1; opacity > 0; opacity = opacity - 0.1) {           
+    			setTimeout(function(){document.getElementById('flash').style.opacity = opacity;},300)                       
+		}  
+	}
+	login();
+	// Add flip camera button
+	let button = document.getElementById('flipcam');
+	if (button) {
+		button.addEventListener('click', nextCam);
 	}
 
 </script>
