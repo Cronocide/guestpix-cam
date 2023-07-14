@@ -288,7 +288,6 @@
 	// other changes before drawing it.
 
 	function takepicture() {
-		camFlash
 		const context = canvas.getContext('2d');
 		width = document.body.clientWidth
 		height = video.videoHeight / (video.videoWidth / width);
@@ -330,6 +329,7 @@
     			setTimeout(function(){document.getElementById('flash').style.opacity = opacity;},300)                       
 		}  
 	}
+	document.getElementById('flash').addEventListener('click', takepicture);
 	login();
 	// Add flip camera button
 	let button = document.getElementById('flipcam');
