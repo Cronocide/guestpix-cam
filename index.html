@@ -178,8 +178,8 @@
 		// width to the value defined here, but the height will be
 		// calculated based on the aspect ratio of the input stream.
 
-		const width = document.body.clientWidth; // We will scale the photo width to this
-		let height = 0; // This will be computed based on the input stream
+		const height = document.body.clientHeight; // We will scale the photo height to this
+		let width = 0; // This will be computed based on the input stream
 
 		// |streaming| indicates whether or not we're currently streaming
 		// video from the camera. Obviously, we start at false.
@@ -289,8 +289,8 @@
 
 	function takepicture() {
 		const context = canvas.getContext('2d');
-		width = document.body.clientWidth
-		height = video.videoHeight / (video.videoWidth / width);
+		height = document.body.clientHeight
+		width = video.videoWidth / (video.videoHeight / height);
 		if (width && height) {
 			canvas.width = width;
 			canvas.height = height;
